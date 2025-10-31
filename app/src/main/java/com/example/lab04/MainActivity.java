@@ -3,6 +3,7 @@ package com.example.lab04;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
@@ -10,7 +11,6 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,15 +20,38 @@ import java.util.Locale;
 
 
 public class MainActivity extends Activity {
-    private Context context;
-    private int duration = Toast.LENGTH_SHORT;
-
-    private Button btnExit;
-    private EditText txtColorSelected;
-    private TextView txtSpyBox;
-    private ConstraintLayout myScreen;
     private final String PREFNAME = "myPrefFile1";
     private String savedColor = "white";
+    private final int duration = Toast.LENGTH_SHORT;
+
+    private Context context;
+    private ConstraintLayout contentCl;
+    private EditText selectingEt;
+    private Button exitBt;
+    private TextView spyBoxTv;
+
+
+
+    /*
+    * Po włączeniu aplikacji:
+    * onCreate
+    * onStart
+    * onResume
+    *
+    * Po kliknięciu home:
+    * onPause
+    *
+    * Po kliknięciu back:
+    * onPause
+    *
+    * Po powrocie do aplikacji:
+    * onRestart
+    * onStart
+    * onResume
+    *
+    * Po kliknięciu exit:
+    * onPause
+    * */
 
 
     @Override
@@ -36,17 +59,21 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        txtColorSelected = findViewById(R.id.editText1);
-        btnExit = findViewById(R.id.button1);
-        txtSpyBox = findViewById(R.id.textView1);
-        myScreen = findViewById(R.id.myScreen1);
-
-        btnExit.setOnClickListener(this::exitBtn_click);
-        txtColorSelected.addTextChangedListener(new TextChangedHandler());
-
         context = getApplicationContext();
         Toast.makeText(context, "onCreate", duration).show();
+
+        contentCl = findViewById(R.id.myScreen1);
+
+        selectingEt = findViewById(R.id.editText1);
+        selectingEt.addTextChangedListener(new TextChangedHandler());
+
+        exitBt = findViewById(R.id.button1);
+        exitBt.setOnClickListener(this::exitBtn_click);
+
+        spyBoxTv = findViewById(R.id.textView1);
     }
+
+
 
     private void exitBtn_click(View v) {
         finish();
@@ -59,15 +86,16 @@ public class MainActivity extends Activity {
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
             String chosenColor = s.toString().toLowerCase(Locale.US);
-            txtSpyBox.setText(chosenColor);
+            spyBoxTv.setText(chosenColor);
 
             try {
                 var color = Color.parseColor(chosenColor);
-                myScreen.setBackgroundColor(color);
+                setBackgroundColor(color);
                 savedColor = chosenColor;
             } catch (Exception ignored) { }
         }
     }
+
 
 
     @Override
@@ -75,8 +103,6 @@ public class MainActivity extends Activity {
         super.onDestroy();
         Toast.makeText(context, "onDestroy", duration).show();
     }
-
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -84,7 +110,6 @@ public class MainActivity extends Activity {
 
         saveStateData(savedColor);
     }
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -92,38 +117,58 @@ public class MainActivity extends Activity {
 
         updateMeUsingSavedStateData();
     }
-
-
     @Override
     protected void onRestart() {
         super.onRestart();
         Toast.makeText(context, "onRestart", duration).show();
     }
-
     @Override
     protected void onResume() {
         super.onResume();
         Toast.makeText(context, "onResume", duration).show();
     }
-
-
     @Override
     protected void onStop() {
         super.onStop();
         Toast.makeText(context, "onStop", duration).show();
     }
 
-
-
-
-
     // ///////////////////////////////////////////////////////////////////
+
+    private void setBackgroundColor(int color) {
+        try {
+            float[] hsv = new float[3];
+            Color.colorToHSV(color, hsv);
+            float value = hsv[2];
+
+            contentCl.setBackgroundColor(color);
+            setUiColor(value);
+        } catch (Exception ignore) { }
+    }
+
+    private void setUiColor(float value) {
+
+        float actValue = value > 0.5 ? 0f : 1f;
+        float[] mainHSV = { 200f, 1, actValue };
+        var main = Color.HSVToColor(mainHSV);
+
+        float[] secondaryHSV = { 59f, 0.69f, 1 - actValue };
+        var secondary = Color.HSVToColor(secondaryHSV);
+
+        selectingEt.setTextColor(main);
+        selectingEt.setBackgroundTintList(ColorStateList.valueOf(main));
+
+        exitBt.setTextColor(secondary);
+        exitBt.setBackgroundTintList(ColorStateList.valueOf(main));
+
+        spyBoxTv.setTextColor(main);
+    }
 
     private void saveStateData(String value) {
         SharedPreferences myPrefContainer = getSharedPreferences(PREFNAME, Activity.MODE_PRIVATE);
         SharedPreferences.Editor myPrefEditor = myPrefContainer.edit();
 
-        String key = "chosenBackgroundColor";
+        var key = "chosenBackgroundColor";
         myPrefEditor.putString(key, value);
 
         myPrefEditor.apply();
@@ -131,20 +176,18 @@ public class MainActivity extends Activity {
 
 
     private void updateMeUsingSavedStateData() {
-        // (in case it exists) use saved data telling backg color
-        SharedPreferences myPrefContainer = getSharedPreferences(PREFNAME, Activity.MODE_PRIVATE);
+        var myPrefContainer = getSharedPreferences(PREFNAME, Activity.MODE_PRIVATE);
         String key = "chosenBackgroundColor";
         String defaultValue = "white";
 
-        if (( myPrefContainer == null ) ||  !myPrefContainer.contains(key)) return;
+        if (( myPrefContainer == null ) || !myPrefContainer.contains(key)) return;
 
         savedColor = myPrefContainer.getString(key, defaultValue);
 
         try {
             var color = Color.parseColor(savedColor);
-            myScreen.setBackgroundColor(color);
-            txtSpyBox.setText(savedColor);
+            setBackgroundColor(color);
+            spyBoxTv.setText(savedColor);
         } catch (Exception ignore) { }
-
     }
 }
