@@ -11,12 +11,16 @@
     <EditText
         android:id="@+id/editText1"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="25dp"
         android:layout_marginTop="150dp"
         android:layout_marginEnd="25dp"
+        android:backgroundTint="#3C4064"
         android:ems="10"
         android:hint="Pick background (red, green, blue, white)"
+        android:textColor="#2D3047"
+        android:textSize="16sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"></EditText>
@@ -28,7 +32,10 @@
         android:layout_marginStart="25dp"
         android:layout_marginTop="25dp"
         android:layout_marginEnd="25dp"
+        android:backgroundTint="#2D3047"
         android:text="Exit"
+        android:textColor="#FFFB4E"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editText1" />
@@ -42,6 +49,9 @@
         android:layout_marginEnd="25dp"
         android:text=" spy box - try clicking HOME and BACK"
         android:textAlignment="center"
+        android:textColor="#2D3047"
+        android:textSize="16sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button1" />
